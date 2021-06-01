@@ -24,6 +24,7 @@ class WritAR: NSObject, AVCaptureAudioDataOutputSampleBufferDelegate {
     let audioBufferQueue = DispatchQueue(label: "com.ahmedbekhit.AudioBufferQueue")
 
     private var isRecording: Bool = false
+    private var isEnding: Bool = false
     
     weak var delegate: RecordARDelegate?
     var videoInputOrientation: ARVideoOrientation = .auto
@@ -229,9 +230,13 @@ class WritAR: NSObject, AVCaptureAudioDataOutputSampleBufferDelegate {
             }
         }
         
-        if assetWriter.status == .writing {
+        if assetWriter.status == .writing && !isEnding {
             isRecording = false
-            assetWriter.finishWriting(completionHandler: finished)
+            isEnding = true
+            assetWriter.finishWriting {
+                self.isEnding = false
+                finished()
+            }
         }
     }
     
